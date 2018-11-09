@@ -137,7 +137,7 @@ void LCD_Map(int mode) {
 
       switch (vLocation){
         case 1:
-          menu = hLocation + 1;
+          menu = hLocation;
           vLocation = 0;
           hLocation = 0;
           break;
