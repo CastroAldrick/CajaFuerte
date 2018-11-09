@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * *
  *                                 *
-   Program to control the LCD menu
+ * Program to control the LCD menu *
  *                                 *
  * * * * * * * * * * * * * * * * * */
 #include <TimerOne.h>
@@ -19,6 +19,12 @@ LiquidCrystal_I2C lcd(0x27,16,2);
 #define PAGES_SAFE_ACCESS       2
 #define PAGES_ADMIN_ACCESS      2
 #define PAGES_VALID_PRINT       4
+
+#define TOTAL_PAGES_MAIN_MENU     PAGES_MAIN_MENU - 2
+#define TOTAL_PAGES_SAFE_ACCESS   PAGES_SAFE_ACCESS - 1
+#define TOTAL_PAGES_ADMIN_ACCESS  PAGES_ADMIN_ACCESS - 1
+#define TOTAL_PAGES_VALID_PRINT   PAGES_VALID_PRINT - 1
+#define LOWEST_PAGE               1
 struct LCD{
   String Main[PAGES_MAIN_MENU] = {"Main Menu", "Safe Access", "Admin Access"};
   String Safe_Access[PAGES_SAFE_ACCESS] = {"Safe Access", "Enter Card"};
@@ -94,7 +100,7 @@ int CheckVDirection(){
   else{return 0;}
 }
 void LCD_Map(int mode) {
-  //Serial.print("Mode is : "); Serial.println(mode);
+  //Serial.print("Mode is : "); Serial.println(mode);  
   switch (mode) {
     case 0:
       lcd.setCursor(0,0);
@@ -103,33 +109,35 @@ void LCD_Map(int mode) {
       hLocation = hLocation + CheckHDirection();
 
       switch (hLocation) {
-        case 1+1:
-          hLocation = 0;
+        case PAGES_MAIN_MENU:
+          hLocation = 1;
           break;
 
-        case 0-1:
-          hLocation = 1;
+        case LOWEST_PAGE - 1:
+          hLocation = PAGES_MAIN_MENU - 1;
           break;
       }
 
       switch (hLocation) {
-        case 0:
+        case 1:
           lcd.setCursor(0,1);
-          lcd.print(sPage.Main[hLocation + 1]);
+          lcd.print(sPage.Main[hLocation]);
           //Serial.println(sMenu.Main[hLocation + 1]);
           break;
 
-        case 1:
+        case 2:
           lcd.setCursor(0,1);
-          lcd.print(sPage.Main[hLocation + 1]);
+          lcd.print(sPage.Main[hLocation]);
           //Serial.println(sMenu.Main[hLocation + 1]);
       }
 
       vLocation = vLocation + CheckVDirection();
 
+      //vLocation = (vLocation == -1)?(0):(vLocation);
+
       switch (vLocation){
         case 1:
-          menu = hLocation +1;
+          menu = hLocation + 1;
           vLocation = 0;
           hLocation = 0;
           break;
@@ -149,4 +157,3 @@ void LCD_Map(int mode) {
       break;
   }
 }
-
