@@ -133,7 +133,7 @@ void LCD_Map(int mode) {
 
       vLocation = vLocation + CheckVDirection();
 
-      //vLocation = (vLocation == -1)?(0):(vLocation);
+      vLocation = (vLocation == -1)?(0):(vLocation);
 
       switch (vLocation){
         case 1:
