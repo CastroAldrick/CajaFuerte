@@ -29,8 +29,6 @@ PAGES LCD_LINES = 2;
 PAGES LCD_TOP_LINE = 6;
 PAGES LCD_MENUS = 10;
 
-int pointer = 0;
-int menu = 0;
 
 PAGES MAIN_PAGES = 2;
 PAGES ACCESS_ATTEMPT_PAGES = 1;
@@ -69,8 +67,9 @@ void setup() {
   Timer1.attachInterrupt( Timers );
 }
 
-int place = 5;
-
+int hLocation = 0;
+int menu = 0;
+int vLocation = 0;
 void loop() {
   Schedule();
 }
@@ -78,10 +77,14 @@ void loop() {
 void Schedule() {
   //Serial.println(buttonDebounceTimer);
   if (!buttonDebounceTimer) {
+    /*
     place=place + CheckHDirection();
-    Serial.println(place);
-    //Serial.println(CheckVDirection());
-    //LCD_MAP(pointer);
+    Serial.print("place "); Serial.print(place);
+    menu = menu + CheckVDirection();
+    Serial.print("      menu "); Serial.println(menu);
+    */
+    //Serial.println("h");
+    LCD_Map(menu);
   }
 }
 
@@ -116,16 +119,55 @@ int CheckVDirection(){
     buttonDebounceTimer = 5;
     return 1;
   }
+  
+  else{return 0;}
 }
+void LCD_Map(int mode) {
+  Serial.print("Mode is : "); Serial.println(mode);
+  switch (mode) {
+    case 0:
+      Serial.print("Main Menu => "); 
+      hLocation = hLocation + CheckHDirection();
 
-/*
-void LCD_Map(int movement) {
-  switch (movement) {
+      switch (hLocation) {
+        case 1+1:
+          hLocation = 0;
+          break;
 
-    case '0':
-      Serial.print(LCD_TILES[0]); 
-      Serial.println(LCD_TITLES[1]);
+        case 0-1:
+          hLocation = 1;
+          break;
+      }
+
+      switch (hLocation) {
+        case 0:
+          Serial.println("Safe Access");
+          break;
+
+        case 1:
+          Serial.println("Admin Access");
+      }
+
+      vLocation = vLocation + CheckVDirection();
+
+      switch (vLocation){
+        case 1:
+          menu = hLocation +1;
+          vLocation = 0;
+          hLocation = 0;
+          break;
+      }
+      
+      break;
+
+
+    case 1:
+      Serial.println("Safe Access => ");
+      break;
+
+    case 2:
+      Serial.println("Admin Access => ");
       break;
   }
 }
-*/
+
