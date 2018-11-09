@@ -22,9 +22,9 @@ void loop() {
     delay(100);
   }*/
   lcd.setCursor(0,0);
-  lcd.print("Aldrick Castro &");
+  lcd.print("Aldrick Castro  ");
   lcd.setCursor(0,1);
-  lcd.print("Jelitza Delgado");
+  lcd.print("Yer Bruh LCD    ");
   //lcd.clear();
  
 }
