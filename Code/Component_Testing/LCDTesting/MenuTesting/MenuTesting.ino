@@ -8,82 +8,55 @@
 #include <LiquidCrystal_I2C.h>
 LiquidCrystal_I2C lcd(0x27,16,2);
 
-typedef int BUTTON;
-typedef const int PAGES;
+// Navigation buttons
+#define UP     53
+#define DOWN   51
+#define OUT    49
+#define IN     47
 
-BUTTON up = 53;
-BUTTON down = 51;
-BUTTON out = 49;
-BUTTON in = 47;
+// Page Number per Menu
+#define PAGES_MAIN_MENU         3
+#define PAGES_SAFE_ACCESS       2
+#define PAGES_ADMIN_ACCESS      2
+#define PAGES_VALID_PRINT       4
 
-bool upState = false;
-bool downState = false;
-bool outState = false;
-bool inState = false;
+// Pages
+struct LCD{
+  String Main[PAGES_MAIN_MENU] = {"Main Menu", "Safe Access", "Admin Access"};
+  String Safe_Access[PAGES_SAFE_ACCESS] = {"Safe Access", "Enter Card"};
+  String Admin_Access[PAGES_ADMIN_ACCESS] = {"Admin Access", "Enter Finger"};
+  String Valid_Print[PAGES_VALID_PRINT] = {"Admin Access Granted", "Enroll New Print", "Delete Existing Print", "Empty Print Memory"};
+};
 
 // List of Timers
 unsigned int volatile buttonDebounceTimer = 5;
 
-// Amount of Pages for each Menu
-PAGES LCD_LINES = 2;
-PAGES LCD_TOP_LINE = 6;
-PAGES LCD_MENUS = 10;
-
-
-PAGES MAIN_PAGES = 2;
-PAGES ACCESS_ATTEMPT_PAGES = 1;
-PAGES ADMIN_ATTEMPT_PAGES = 1;
-PAGES ADMIN_ACCESS_PAGES = 3;
-
-// Pages
-String LCD_TITLES [LCD_MENUS] = {
-  "Main Menu",
-  "Safe Access",
-  "Admin Access",
-  "Enter Card",
-  "Enter Finger",
-  "Valid",
-  "Invalid",
-  "Enroll New Print",
-  "Delete Print",
-  "Empty Saved Prints"
-};
-/*
-  String LCD_Main          [LCD_LINES][MAIN_PAGES]            = { {"Main",        "Access Safe"}, {"Main", "Admin Access"} };
-  String LCD_Access_Attempt[LCD_LINES][ACCESS_ATTEMPT_PAGES]  = { {"Access Safe"} ,        {"Enter Your Card"}             };
-  String LCD_Admin_Attempt [LCD_LINES][ADMIN_ATTEMPT_PAGES]   = { {"Admin Access"} ,       {"Enter Your Finger"}           };
-  String LCD_Admin_Access  [LCD_LINES][ADMIN_ACCESS_PAGES]    = { {"Admin Mode"}{}{} }
-*/
+int hLocation = 0;
+int menu = 0;
+int vLocation = 0;
+struct LCD sMenu;
 
 void setup() {
   Serial.begin(9600);
 
-  pinMode(up, INPUT);
-  pinMode(down , INPUT);
-  pinMode(out, INPUT);
-  pinMode(in, INPUT);
+  pinMode(UP, INPUT);
+  pinMode(DOWN , INPUT);
+  pinMode(OUT, INPUT);
+  pinMode(IN, INPUT);
 
   Timer1.initialize(100000);
   Timer1.attachInterrupt( Timers );
+
 }
 
-int hLocation = 0;
-int menu = 0;
-int vLocation = 0;
 void loop() {
   Schedule();
+  //Serial.println(sMenu.Main[0]);
 }
 
 void Schedule() {
   //Serial.println(buttonDebounceTimer);
   if (!buttonDebounceTimer) {
-    /*
-    place=place + CheckHDirection();
-    Serial.print("place "); Serial.print(place);
-    menu = menu + CheckVDirection();
-    Serial.print("      menu "); Serial.println(menu);
-    */
-    //Serial.println("h");
     LCD_Map(menu);
   }
 }
@@ -93,13 +66,13 @@ void Timers() {
     buttonDebounceTimer--;
 }
 int CheckHDirection() {
-  if (digitalRead(53)) {
+  if (digitalRead(UP)) {
     Serial.println("Up has been pressed");
     buttonDebounceTimer = 5;
     return 1;
   }
 
-  if (digitalRead(51)) {
+  if (digitalRead(DOWN)) {
     Serial.println("Down has been pressed");
     buttonDebounceTimer = 5;
     return -1;
@@ -108,13 +81,13 @@ int CheckHDirection() {
   else{return 0;}
 }
 int CheckVDirection(){
-  if (digitalRead(49)) {
+  if (digitalRead(OUT)) {
     Serial.println("Out has been pressed");
     buttonDebounceTimer = 5;
     return -1;
   }
 
-  if (digitalRead(47)) {
+  if (digitalRead(IN)) {
     Serial.println("In has been pressed");
     buttonDebounceTimer = 5;
     return 1;
@@ -123,10 +96,10 @@ int CheckVDirection(){
   else{return 0;}
 }
 void LCD_Map(int mode) {
-  Serial.print("Mode is : "); Serial.println(mode);
+  //Serial.print("Mode is : "); Serial.println(mode);
   switch (mode) {
     case 0:
-      Serial.print("Main Menu => "); 
+      Serial.print(sMenu.Main[0]); Serial.print(" => "); 
       hLocation = hLocation + CheckHDirection();
 
       switch (hLocation) {
@@ -141,11 +114,11 @@ void LCD_Map(int mode) {
 
       switch (hLocation) {
         case 0:
-          Serial.println("Safe Access");
+          Serial.println(sMenu.Main[hLocation + 1]);
           break;
 
         case 1:
-          Serial.println("Admin Access");
+          Serial.println(sMenu.Main[hLocation + 1]);
       }
 
       vLocation = vLocation + CheckVDirection();
@@ -157,16 +130,14 @@ void LCD_Map(int mode) {
           hLocation = 0;
           break;
       }
-      
       break;
-
-
+      
     case 1:
-      Serial.println("Safe Access => ");
+      Serial.print(sMenu.Safe_Access[0]); Serial.println(" => ");
       break;
 
     case 2:
-      Serial.println("Admin Access => ");
+      Serial.print(sMenu.Admin_Access[0]); Serial.println(" => ");
       break;
   }
 }
