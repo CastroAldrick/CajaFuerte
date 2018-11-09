@@ -14,30 +14,28 @@ LiquidCrystal_I2C lcd(0x27,16,2);
 #define OUT    49
 #define IN     47
 
-// Page Number per Menu
+// Pages Number per Menu
 #define PAGES_MAIN_MENU         3
 #define PAGES_SAFE_ACCESS       2
 #define PAGES_ADMIN_ACCESS      2
 #define PAGES_VALID_PRINT       4
-
-// Pages
 struct LCD{
   String Main[PAGES_MAIN_MENU] = {"Main Menu", "Safe Access", "Admin Access"};
   String Safe_Access[PAGES_SAFE_ACCESS] = {"Safe Access", "Enter Card"};
   String Admin_Access[PAGES_ADMIN_ACCESS] = {"Admin Access", "Enter Finger"};
   String Valid_Print[PAGES_VALID_PRINT] = {"Admin Access Granted", "Enroll New Print", "Delete Existing Print", "Empty Print Memory"};
-};
+}sPage;
+int hLocation = 0;
+int menu = 0;
+int vLocation = 0;
 
 // List of Timers
 unsigned int volatile buttonDebounceTimer = 5;
 
-int hLocation = 0;
-int menu = 0;
-int vLocation = 0;
-struct LCD sMenu;
-
 void setup() {
   Serial.begin(9600);
+  lcd.init();
+  lcd.backlight();
 
   pinMode(UP, INPUT);
   pinMode(DOWN , INPUT);
@@ -99,7 +97,9 @@ void LCD_Map(int mode) {
   //Serial.print("Mode is : "); Serial.println(mode);
   switch (mode) {
     case 0:
-      Serial.print(sMenu.Main[0]); Serial.print(" => "); 
+      lcd.setCursor(0,0);
+      lcd.print(sPage.Main[0]);
+      //Serial.print(sMenu.Main[0]); Serial.print(" => "); 
       hLocation = hLocation + CheckHDirection();
 
       switch (hLocation) {
@@ -114,11 +114,15 @@ void LCD_Map(int mode) {
 
       switch (hLocation) {
         case 0:
-          Serial.println(sMenu.Main[hLocation + 1]);
+          lcd.setCursor(0,1);
+          lcd.print(sPage.Main[hLocation + 1]);
+          //Serial.println(sMenu.Main[hLocation + 1]);
           break;
 
         case 1:
-          Serial.println(sMenu.Main[hLocation + 1]);
+          lcd.setCursor(0,1);
+          lcd.print(sPage.Main[hLocation + 1]);
+          //Serial.println(sMenu.Main[hLocation + 1]);
       }
 
       vLocation = vLocation + CheckVDirection();
@@ -133,11 +137,15 @@ void LCD_Map(int mode) {
       break;
       
     case 1:
-      Serial.print(sMenu.Safe_Access[0]); Serial.println(" => ");
+      lcd.setCursor(0,0);
+      lcd.print(sPage.Safe_Access[0]);  
+      //Serial.print(sMenu.Safe_Access[0]); Serial.println(" => ");
       break;
 
     case 2:
-      Serial.print(sMenu.Admin_Access[0]); Serial.println(" => ");
+      lcd.setCursor(0,0);
+      lcd.print(sPage.Admin_Access[0]);
+      //Serial.print(sMenu.Admin_Access[0]); Serial.println(" => ");
       break;
   }
 }
