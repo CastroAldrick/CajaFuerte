@@ -19,17 +19,20 @@ LiquidCrystal_I2C lcd(0x27,16,2);
 #define PAGES_SAFE_ACCESS       2
 #define PAGES_ADMIN_ACCESS      2
 #define PAGES_VALID_PRINT       4
+#define PAGES_ENROLL_PRINT      7
 
-#define TOTAL_PAGES_MAIN_MENU     PAGES_MAIN_MENU - 2
-#define TOTAL_PAGES_SAFE_ACCESS   PAGES_SAFE_ACCESS - 1
-#define TOTAL_PAGES_ADMIN_ACCESS  PAGES_ADMIN_ACCESS - 1
-#define TOTAL_PAGES_VALID_PRINT   PAGES_VALID_PRINT - 1
+//#define TOTAL_PAGES_MAIN_MENU     PAGES_MAIN_MENU - 1
+//#define TOTAL_PAGES_SAFE_ACCESS   PAGES_SAFE_ACCESS - 1
+//#define TOTAL_PAGES_ADMIN_ACCESS  PAGES_ADMIN_ACCESS - 1
+//#define TOTAL_PAGES_VALID_PRINT   PAGES_VALID_PRINT - 1
+//#define TOTAL_PAGES_ENROLL_PRINT  PAGES_ENROLL_PRINT - 1
 #define LOWEST_PAGE               1
 struct LCD{
   String Main[PAGES_MAIN_MENU] = {"Main Menu", "Safe Access", "Admin Access"};
   String Safe_Access[PAGES_SAFE_ACCESS] = {"Safe Access", "Enter Card"};
   String Admin_Access[PAGES_ADMIN_ACCESS] = {"Admin Access", "Enter Finger"};
   String Valid_Print[PAGES_VALID_PRINT] = {"Access Granted", "Enroll New Print", "Delete Existing Print", "Erase All Prints"};
+  String Enroll_Print[PAGES_ENROLL_PRINT] = {"Enroll New Print", "Print ID #", "Enter Finger", "Remove Finger", "Enter Finger", "Finger Enrolled", "No More Room"};
 }sPage;
 int hLocation = 1;
 int menu = 0;
@@ -285,3 +288,4 @@ void LCD_Map(int mode) {
       break;
   }
 }
+
