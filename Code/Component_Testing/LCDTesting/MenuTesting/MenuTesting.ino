@@ -34,6 +34,7 @@ struct LCD{
 int hLocation = 0;
 int menu = 0;
 int vLocation = 0;
+bool cleared = false;
 
 // List of Timers
 unsigned int volatile buttonDebounceTimer = 5;
@@ -73,12 +74,14 @@ int CheckHDirection() {
   if (digitalRead(UP)) {
     Serial.println("Up has been pressed");
     buttonDebounceTimer = 5;
+    cleared = false;
     return 1;
   }
 
   if (digitalRead(DOWN)) {
     Serial.println("Down has been pressed");
     buttonDebounceTimer = 5;
+    cleared = false;
     return -1;
   }
   
@@ -88,12 +91,14 @@ int CheckVDirection(){
   if (digitalRead(OUT)) {
     Serial.println("Out has been pressed");
     buttonDebounceTimer = 5;
+    cleared = false;
     return -1;
   }
 
   if (digitalRead(IN)) {
     Serial.println("In has been pressed");
     buttonDebounceTimer = 5;
+    cleared = false;
     return 1;
   }
   
@@ -105,7 +110,6 @@ void LCD_Map(int mode) {
     case 0:
       lcd.setCursor(0,0);
       lcd.print(sPage.Main[0]);
-      //Serial.print(sMenu.Main[0]); Serial.print(" => "); 
       hLocation = hLocation + CheckHDirection();
 
       switch (hLocation) {
@@ -120,15 +124,23 @@ void LCD_Map(int mode) {
 
       switch (hLocation) {
         case 1:
+          if (cleared == false){
+            lcd.setCursor (0, 1);
+            lcd.print("                ");
+            cleared = true; 
+          }
           lcd.setCursor(0,1);
           lcd.print(sPage.Main[hLocation]);
-          //Serial.println(sMenu.Main[hLocation + 1]);
           break;
 
         case 2:
+          if (cleared == false){
+            lcd.setCursor (0, 1);
+            lcd.print("                ");
+            cleared = true; 
+          }
           lcd.setCursor(0,1);
           lcd.print(sPage.Main[hLocation]);
-          //Serial.println(sMenu.Main[hLocation + 1]);
       }
 
       vLocation = vLocation + CheckVDirection();
@@ -137,6 +149,7 @@ void LCD_Map(int mode) {
 
       switch (vLocation){
         case 1:
+          lcd.clear();
           menu = hLocation;
           vLocation = 0;
           hLocation = 0;
@@ -147,13 +160,41 @@ void LCD_Map(int mode) {
     case 1:
       lcd.setCursor(0,0);
       lcd.print(sPage.Safe_Access[0]);  
-      //Serial.print(sMenu.Safe_Access[0]); Serial.println(" => ");
+      lcd.setCursor(0,1);
+      lcd.print("Enter Card");
+      
+      vLocation = vLocation + CheckVDirection();
+
+      switch (vLocation){
+       case -1:
+        lcd.clear();
+        menu = 0;
+        vLocation = 0;
+        hLocation = 0;
+        break; 
+      }
+
+      
+      //Scan CARD
+      
       break;
 
     case 2:
       lcd.setCursor(0,0);
       lcd.print(sPage.Admin_Access[0]);
-      //Serial.print(sMenu.Admin_Access[0]); Serial.println(" => ");
+      lcd.setCursor(0,1);
+      lcd.print("Scan Finger");
+
+      vLocation = vLocation + CheckVDirection();
+
+      switch (vLocation){
+        case -1:
+          menu = 0;
+          vLocation = 0;
+          hLocation = 0;
+          break;  
+      }
+            
       break;
   }
 }
