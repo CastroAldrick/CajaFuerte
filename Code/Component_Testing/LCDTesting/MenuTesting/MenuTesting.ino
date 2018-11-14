@@ -56,7 +56,6 @@ void setup() {
 
 void loop() {
   Schedule();
-  //Serial.println(sMenu.Main[0]);
 }
 
 void Schedule() {
@@ -65,7 +64,6 @@ void Schedule() {
     LCD_Map(menu);
   }
 }
-
 void Timers() {
   if (buttonDebounceTimer)
     buttonDebounceTimer--;
@@ -105,7 +103,6 @@ int CheckVDirection(){
   else{return 0;}
 }
 void LCD_Map(int mode) { 
-  int fingerScanned = 0;
   
   switch (mode) {
     case 0:
@@ -230,7 +227,6 @@ void LCD_Map(int mode) {
       }
 
 //****// Finger Scanning    
-      //fingerScanned = 1;
       if (true){
         lcd.clear();
         menu = 3;
