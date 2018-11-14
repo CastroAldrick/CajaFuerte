@@ -29,9 +29,9 @@ struct LCD{
   String Main[PAGES_MAIN_MENU] = {"Main Menu", "Safe Access", "Admin Access"};
   String Safe_Access[PAGES_SAFE_ACCESS] = {"Safe Access", "Enter Card"};
   String Admin_Access[PAGES_ADMIN_ACCESS] = {"Admin Access", "Enter Finger"};
-  String Valid_Print[PAGES_VALID_PRINT] = {"Admin Access Granted", "Enroll New Print", "Delete Existing Print", "Empty Print Memory"};
+  String Valid_Print[PAGES_VALID_PRINT] = {"Access Granted", "Enroll New Print", "Delete Existing Print", "Erase All Prints"};
 }sPage;
-int hLocation = 0;
+int hLocation = 1;
 int menu = 0;
 int vLocation = 0;
 bool cleared = false;
@@ -104,8 +104,9 @@ int CheckVDirection(){
   
   else{return 0;}
 }
-void LCD_Map(int mode) {
-  //Serial.print("Mode is : "); Serial.println(mode);  
+void LCD_Map(int mode) { 
+  int fingerScanned = 0;
+  
   switch (mode) {
     case 0:
       lcd.setCursor(0,0);
@@ -152,7 +153,7 @@ void LCD_Map(int mode) {
           lcd.clear();
           menu = hLocation;
           vLocation = 0;
-          hLocation = 0;
+          hLocation = 1;
           break;
       }
       break;
@@ -161,7 +162,7 @@ void LCD_Map(int mode) {
       lcd.setCursor(0,0);
       lcd.print(sPage.Safe_Access[0]);  
       lcd.setCursor(0,1);
-      lcd.print("Enter Card");
+      lcd.print(sPage.Safe_Access[1]);
       
       vLocation = vLocation + CheckVDirection();
 
@@ -170,20 +171,53 @@ void LCD_Map(int mode) {
         lcd.clear();
         menu = 0;
         vLocation = 0;
-        hLocation = 0;
+        hLocation = 1;
         break; 
       }
+      
+//****// Scan Card
+      delay(5000);
+      if (true){
+        // Card scans and is good
+        // Spins motor for "knob effect"
+        // Pulls Solenoid
+        lcd.clear();
+        lcd.setCursor(0,0);
+        lcd.print("Valid Card");
+  
+        lcd.setCursor(0,1);
+        lcd.print("Door is Open");
 
-      
-      //Scan CARD
-      
+        // Wait for door to be closed "delay"
+        delay(5000);
+        lcd.clear();
+        menu = 0;
+        hLocation = 1;
+        vLocation = 0;
+      }
+      else{
+        // Card scans and is bad
+        lcd.clear();
+        lcd.setCursor(0,0);
+        lcd.print("Sorry");
+  
+        lcd.setCursor(0,1);
+        lcd.print("Invalid Card");
+
+        // Wait a little "delay"
+        delay(5000);
+        lcd.clear();
+        menu = 0;
+        hLocation = 1;
+        vLocation = 0;
+      }
       break;
 
     case 2:
       lcd.setCursor(0,0);
       lcd.print(sPage.Admin_Access[0]);
       lcd.setCursor(0,1);
-      lcd.print("Scan Finger");
+      lcd.print(sPage.Admin_Access[1]);
 
       vLocation = vLocation + CheckVDirection();
 
@@ -191,10 +225,67 @@ void LCD_Map(int mode) {
         case -1:
           menu = 0;
           vLocation = 0;
-          hLocation = 0;
+          hLocation = 1;
           break;  
       }
-            
+
+//****// Finger Scanning    
+      //fingerScanned = 1;
+      if (true){
+        lcd.clear();
+        menu = 3;
+        vLocation = 0;
+        hLocation = 1;
+      }
+      break;
+
+    case 3:
+      lcd.setCursor(0,0);
+      lcd.print(sPage.Valid_Print[0]);
+      
+      hLocation = hLocation + CheckHDirection();
+
+      switch (hLocation){
+        case PAGES_VALID_PRINT:
+          hLocation = 1;
+          break;        
+
+        case LOWEST_PAGE - 1:
+          hLocation = PAGES_VALID_PRINT - 1;
+          break;
+      }
+
+      switch (hLocation){
+        case 1:
+          if (cleared == false){
+            lcd.setCursor (0, 1);
+            lcd.print("                ");
+            cleared = true; 
+          }
+          lcd.setCursor(0,1);
+          lcd.print(sPage.Valid_Print[hLocation]);
+          break; 
+
+        case 2:
+          if (cleared == false){
+            lcd.setCursor (0, 1);
+            lcd.print("                ");
+            cleared = true; 
+          }
+          lcd.setCursor(0,1);
+          lcd.print(sPage.Valid_Print[hLocation]);
+          break;
+
+        case 3:
+          if (cleared == false){
+            lcd.setCursor (0, 1);
+            lcd.print("                ");
+            cleared = true; 
+          }
+          lcd.setCursor(0,1);
+          lcd.print(sPage.Valid_Print[hLocation]);
+          break;
+      }
       break;
   }
 }
