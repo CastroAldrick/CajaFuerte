@@ -20,12 +20,6 @@ LiquidCrystal_I2C lcd(0x27,16,2);
 #define PAGES_ADMIN_ACCESS      2
 #define PAGES_VALID_PRINT       4
 #define PAGES_ENROLL_PRINT      7
-
-//#define TOTAL_PAGES_MAIN_MENU     PAGES_MAIN_MENU - 1
-//#define TOTAL_PAGES_SAFE_ACCESS   PAGES_SAFE_ACCESS - 1
-//#define TOTAL_PAGES_ADMIN_ACCESS  PAGES_ADMIN_ACCESS - 1
-//#define TOTAL_PAGES_VALID_PRINT   PAGES_VALID_PRINT - 1
-//#define TOTAL_PAGES_ENROLL_PRINT  PAGES_ENROLL_PRINT - 1
 #define LOWEST_PAGE               1
 struct LCD{
   String Main[PAGES_MAIN_MENU] = {"Main Menu", "Safe Access", "Admin Access"};
