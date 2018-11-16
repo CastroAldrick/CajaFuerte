@@ -20,7 +20,8 @@ LiquidCrystal_I2C lcd(0x27,16,2);
 #define PAGES_ADMIN_ACCESS      2
 #define PAGES_VALID_PRINT       4
 #define PAGES_ENROLL_PRINT      7
-#define LOWEST_PAGE               1
+#define LOWEST_PAGE             1
+
 struct LCD{
   String Main[PAGES_MAIN_MENU] = {"Main Menu", "Safe Access", "Admin Access"};
   String Safe_Access[PAGES_SAFE_ACCESS] = {"Safe Access", "Enter Card"};
@@ -28,6 +29,7 @@ struct LCD{
   String Valid_Print[PAGES_VALID_PRINT] = {"Access Granted", "Enroll New Print", "Delete Existing Print", "Erase All Prints"};
   String Enroll_Print[PAGES_ENROLL_PRINT] = {"Enroll New Print", "Print ID #", "Enter Finger", "Remove Finger", "Enter Finger", "Finger Enrolled", "No More Room"};
 }sPage;
+
 int hLocation = 1;
 int menu = 0;
 int vLocation = 0;
@@ -279,6 +281,24 @@ void LCD_Map(int mode) {
           lcd.print(sPage.Valid_Print[hLocation]);
           break;
       }
+      
+      vLocation = vLocation + CheckVDirection();
+      
+      switch (vLocation){
+        case -1:
+          lcd.clear();
+          menu = 0;
+          vLocation = 0;
+          hLocation = 1;
+          break;
+          
+        case 1:
+          lcd.clear();
+          vLocation = 0;
+          hLocation = 1;
+          break;
+      }
+      
       break;
   }
 }
