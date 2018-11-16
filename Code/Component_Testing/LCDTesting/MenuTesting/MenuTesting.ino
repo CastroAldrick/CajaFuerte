@@ -236,7 +236,7 @@ void LCD_Map(int mode) {
 
     case 3:
       lcd.setCursor(0,0);
-      lcd.print(sPage.Valid_Print[0]);
+      lcd.print(sPage.Valid_Print[0]);  // Access Granted
       
       hLocation = hLocation + CheckHDirection();
 
@@ -258,7 +258,7 @@ void LCD_Map(int mode) {
             cleared = true; 
           }
           lcd.setCursor(0,1);
-          lcd.print(sPage.Valid_Print[hLocation]);
+          lcd.print(sPage.Valid_Print[hLocation]); //  Enroll New Print
           break; 
 
         case 2:
@@ -268,7 +268,7 @@ void LCD_Map(int mode) {
             cleared = true; 
           }
           lcd.setCursor(0,1);
-          lcd.print(sPage.Valid_Print[hLocation]);
+          lcd.print(sPage.Valid_Print[hLocation]);  // Delete Existing Print
           break;
 
         case 3:
@@ -278,7 +278,7 @@ void LCD_Map(int mode) {
             cleared = true; 
           }
           lcd.setCursor(0,1);
-          lcd.print(sPage.Valid_Print[hLocation]);
+          lcd.print(sPage.Valid_Print[hLocation]);  //  Erase All Prints
           break;
       }
       
@@ -287,18 +287,81 @@ void LCD_Map(int mode) {
       switch (vLocation){
         case -1:
           lcd.clear();
-          menu = 0;
+          menu = 0;    //  Main Menu
           vLocation = 0;
           hLocation = 1;
           break;
           
         case 1:
           lcd.clear();
+          menu = 4;    //  Enroll New Print
           vLocation = 0;
           hLocation = 1;
           break;
       }
+      break;
+
+    case 4: //  Enroll New Print Menu
+      lcd.setCursor(0,0);
+      lcd.print(sPage.Enroll_Print[0]);  //  Enroll New Print
+      lcd.setCursor(0,1);
+      lcd.print(sPage.Enroll_Print[1]);  //  Print ID # 
+
+      hLocation = hLocation + -CheckHDirection();
       
+      switch (hLocation){
+        case 0:
+          hLocation = 1;
+          break;
+
+        case 6:
+          hLocation = 5;
+          break;
+      }
+      
+      lcd.print("  "); lcd.print(hLocation);
+
+      vLocation = CheckVDirection();
+
+      switch (vLocation){
+        case -1:
+          menu = 3;
+          vLocation = 0;
+          hLocation = 1;
+          break;  
+
+        case 1:
+          vLocation = 0;
+          hLocation = 1;
+          lcd.setCursor (0, 1);
+          lcd.print("                ");
+          lcd.setCursor (0, 1);
+          lcd.print(sPage.Enroll_Print[2]);  //  Enter Finger
+
+          // Scan Finger
+          delay(2000);
+          lcd.setCursor (0, 1);
+          lcd.print("                ");
+          lcd.setCursor (0, 1);
+          lcd.print(sPage.Enroll_Print[3]);  //  Remove Finger
+          
+          delay(2000);
+          lcd.setCursor (0, 1);
+          lcd.print("                ");
+          lcd.setCursor (0, 1);
+          lcd.print(sPage.Enroll_Print[4]);  //  Enter Finger
+
+          delay(2000);
+          lcd.setCursor (0, 1);
+          lcd.print("                ");
+          lcd.setCursor (0, 1);
+          lcd.print(sPage.Enroll_Print[5]);  //  Finger Enrolled
+          delay(2000);
+          lcd.clear();
+          menu = 0;
+          // Add finger print counter
+          break;
+      }
       break;
   }
 }
