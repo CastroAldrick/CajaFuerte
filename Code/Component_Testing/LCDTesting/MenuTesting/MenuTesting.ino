@@ -20,6 +20,7 @@ LiquidCrystal_I2C lcd(0x27,16,2);
 #define PAGES_ADMIN_ACCESS      2
 #define PAGES_VALID_PRINT       4
 #define PAGES_ENROLL_PRINT      7
+#define PAGES_DELETE_PRINT      3
 #define LOWEST_PAGE             1
 
 struct LCD{
@@ -28,6 +29,7 @@ struct LCD{
   String Admin_Access[PAGES_ADMIN_ACCESS] = {"Admin Access", "Enter Finger"};
   String Valid_Print[PAGES_VALID_PRINT] = {"Access Granted", "Enroll New Print", "Delete Existing Print", "Erase All Prints"};
   String Enroll_Print[PAGES_ENROLL_PRINT] = {"Enroll New Print", "Print ID #", "Enter Finger", "Remove Finger", "Enter Finger", "Finger Enrolled", "No More Room"};
+  String Delete_Print[PAGES_DELETE_PRINT] = {"Delete Print", "Print ID #", "Print Deleted"};
 }sPage;
 
 int hLocation = 1;
@@ -236,7 +238,7 @@ void LCD_Map(int mode) {
 
     case 3:
       lcd.setCursor(0,0);
-      lcd.print(sPage.Valid_Print[0]);  // Access Granted
+      lcd.print(sPage.Valid_Print[0]);  //  Access Granted
       
       hLocation = hLocation + CheckHDirection();
 
@@ -294,7 +296,7 @@ void LCD_Map(int mode) {
           
         case 1:
           lcd.clear();
-          menu = 4;    //  Enroll New Print
+          menu = hLocation + 3;    //  Enroll New Print = 4, Delete Existing = 5, Erase All Prints = 6
           vLocation = 0;
           hLocation = 1;
           break;
@@ -325,6 +327,7 @@ void LCD_Map(int mode) {
 
       switch (vLocation){
         case -1:
+          lcd.clear();
           menu = 3;
           vLocation = 0;
           hLocation = 1;
@@ -363,6 +366,53 @@ void LCD_Map(int mode) {
           break;
       }
       break;
+
+    case 5:
+      lcd.setCursor(0,0);
+      lcd.print(sPage.Delete_Print[0]);  //  Delete Print
+      lcd.setCursor(0,1);
+      lcd.print(sPage.Delete_Print[1]);  //  Print ID #
+
+      hLocation = hLocation + -CheckHDirection();
+      
+      switch (hLocation){
+        case 0:
+          hLocation = 1;
+          break;
+
+        case 6:
+          hLocation = 5;
+          break;
+      }
+
+      lcd.print("  "); lcd.print(hLocation);
+
+      vLocation = CheckVDirection();
+
+      switch (vLocation){
+        case -1:
+          lcd.clear();
+          menu = 3;
+          vLocation = 0;
+          hLocation = 1;
+          break;
+        
+        case 1:
+          //  Delete Print
+          delay(2000);
+          lcd.setCursor (0, 1);
+          lcd.print("                ");
+          lcd.setCursor (0, 1);
+          lcd.print(sPage.Delete_Print[2]); lcd.print(" #"); lcd.print(hLocation);
+          delay(2000);
+
+          lcd.clear();
+          menu = 0;
+          break;
+      }
+      break;
+
+      
   }
 }
 
