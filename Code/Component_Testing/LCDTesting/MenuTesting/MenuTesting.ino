@@ -21,15 +21,30 @@ LiquidCrystal_I2C lcd(0x27,16,2);
 #define PAGES_VALID_PRINT       4
 #define PAGES_ENROLL_PRINT      7
 #define PAGES_DELETE_PRINT      3
+#define PAGES_DELETE_ALL        3
 #define LOWEST_PAGE             1
 
 struct LCD{
-  String Main[PAGES_MAIN_MENU] = {"Main Menu", "Safe Access", "Admin Access"};
-  String Safe_Access[PAGES_SAFE_ACCESS] = {"Safe Access", "Enter Card"};
-  String Admin_Access[PAGES_ADMIN_ACCESS] = {"Admin Access", "Enter Finger"};
-  String Valid_Print[PAGES_VALID_PRINT] = {"Access Granted", "Enroll New Print", "Delete Existing Print", "Erase All Prints"};
-  String Enroll_Print[PAGES_ENROLL_PRINT] = {"Enroll New Print", "Print ID #", "Enter Finger", "Remove Finger", "Enter Finger", "Finger Enrolled", "No More Room"};
-  String Delete_Print[PAGES_DELETE_PRINT] = {"Delete Print", "Print ID #", "Print Deleted"};
+  String Main[PAGES_MAIN_MENU]            = {"Main Menu",               //  Title
+                                      "Safe Access","Admin Access"};    //  Options
+                                             
+  String Safe_Access[PAGES_SAFE_ACCESS]   = {"Safe Access",             //  Title
+                                             "Enter Card"};             //  Options
+                                             
+  String Admin_Access[PAGES_ADMIN_ACCESS] = {"Admin Access",            //  Title
+                                             "Enter Finger"};           //  Options
+                                             
+  String Valid_Print[PAGES_VALID_PRINT]   = {"Access Granted",                               //  Title
+                        "Enroll New Print", "Delete Existing Print", "Erase All Prints"};    // Options
+                                             
+  String Enroll_Print[PAGES_ENROLL_PRINT] = {"Enroll New Print",                                              //  Title
+        "Print ID #", "Enter Finger", "Remove Finger", "Enter Finger", "Finger Enrolled", "No More Room"};    //  Options
+      
+  String Delete_Print[PAGES_DELETE_PRINT] = {"Delete Print",             //  Title
+                                      "Print ID #", "Print Deleted"};    //  Options
+  
+  String Delete_All[PAGES_DELETE_ALL]     = {"Dlt All Prints",          //  Title
+                                    "Are You Sure?", "All Deleted"};    //  Options
 }sPage;
 
 int hLocation = 1;
@@ -412,7 +427,42 @@ void LCD_Map(int mode) {
       }
       break;
 
-      
+      //  
+      case 6:
+        lcd.setCursor(0,0);
+        lcd.print(sPage.Delete_All[0]);  //  Delete All Prints
+        lcd.setCursor(0,1);
+        lcd.print(sPage.Delete_All[1]);  //  Are You Sure?
+    
+        vLocation = CheckVDirection();
+  
+        switch (vLocation){
+          case -1:
+            lcd.clear();
+            menu = 3;
+            vLocation = 0;
+            hLocation = 1;
+            break;
+          
+          case 1:
+            //  Delete All The Prints
+            lcd.setCursor (0, 1);
+            lcd.print("                ");
+            lcd.setCursor (0, 1);
+            lcd.print("Deleting Prints");
+            delay(2000);
+            lcd.setCursor (0, 1);
+            lcd.print("                ");
+            lcd.setCursor (0, 1);
+            lcd.print(sPage.Delete_All[2]);
+            delay(2000);
+  
+            lcd.clear();
+            menu = 0;
+            vLocation = 0;
+            hLocation = 1;
+            break;
+        }
   }
 }
 
