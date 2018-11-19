@@ -72,6 +72,7 @@ void setup() {
 
 void loop() {
   Schedule();
+  Serial.println(digitalRead(UP));
 }
 
 void Schedule() {

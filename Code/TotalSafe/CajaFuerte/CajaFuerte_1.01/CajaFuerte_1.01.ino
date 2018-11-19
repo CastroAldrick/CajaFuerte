@@ -143,4 +143,5 @@ void fillCardBuffer(){ // Gets all the cards from Sd Card and places them in Car
 /* Date         Version       Modification
  * 11/6/2018    v1.00         1.  Added the timer for the project
  *                            2.  Added a function to read the Card.txt file from the SD Card and then organize it
+ * 11/9/2018    v1.01         1.  Added pinmode for the RFID Card  
  */

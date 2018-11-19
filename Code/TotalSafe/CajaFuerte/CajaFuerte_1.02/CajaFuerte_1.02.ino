@@ -41,8 +41,8 @@ bool cleared = false;
 #define CS_SD_CARD  25
 
 // Navigation buttons
-#define UP     53
-#define DOWN   51
+#define UP     46
+#define DOWN   48
 #define OUT    49
 #define IN     47
 
@@ -84,6 +84,7 @@ void setup() {
   pinMode(BEATING_LED, OUTPUT);
   pinMode(CS_RFID, OUTPUT);
   pinMode(CS_SD_CARD, OUTPUT);
+  
   pinMode(UP, INPUT);
   pinMode(DOWN , INPUT);
   pinMode(OUT, INPUT);
@@ -115,6 +116,7 @@ void setup() {
 }
 void loop() {
   jobs();
+  
 }
 void jobs(){
 
@@ -131,6 +133,7 @@ void jobs(){
 void dec(){
   if (beat)
     beat--;
+    
   if (buttonDebounceTimer)
     buttonDebounceTimer--;
 }
@@ -223,6 +226,7 @@ int CheckHDirection() {
   
   else{return 0;}
 }
+
 int CheckVDirection(){
   if (digitalRead(OUT)) {
     Serial.println("Out has been pressed");
@@ -240,6 +244,7 @@ int CheckVDirection(){
   
   else{return 0;}
 }
+
 void LCD_Map(int mode) { 
   
   switch (mode) {
@@ -590,7 +595,11 @@ void LCD_Map(int mode) {
 
 
 
+
+
 /* Date         Version       Modification
  * 11/6/2018    v1.00         1.  Added the timer for the project
  *                            2.  Added a function to read the Card.txt file from the SD Card and then organize it
+ * 11/9/2018    v1.01         1.  Added pinmode for the RFID Card                           
+ * 11/18/2018   v1.02         1.  Added functions for the menu and the navigation
  */
