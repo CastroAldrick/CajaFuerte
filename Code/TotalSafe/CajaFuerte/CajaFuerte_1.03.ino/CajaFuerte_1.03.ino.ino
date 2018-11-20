@@ -22,8 +22,10 @@
 
 LiquidCrystal_I2C lcd(0x27,16,2);
 
-unsigned int volatile beat = 10; // 1000ms
+unsigned int volatile beat = 10; // 1s
 unsigned int volatile buttonDebounceTimer = 5; // 500ms
+unsigned int volatile cardScanningTimer = 50; // 5s
+
 //Beating LED
 #define BEATING_LED 24
 
@@ -38,6 +40,7 @@ bool cleared = false;
 
 int successfulRead = 0;
 String enteredCard = "";
+int resetCardTimer = 0;
 
 // Chip Selects for SPI Slaves
 #define CS_RFID     22
@@ -61,7 +64,7 @@ MFRC522 mfrc522(CS_RFID, RST_PIN);
 #define PAGES_DELETE_ALL        3
 #define LOWEST_PAGE             1
 
-struct LCD{
+struct LCD { 
   String Main[PAGES_MAIN_MENU]            = {"Main Menu",               //  Title
                                       "Safe Access","Admin Access"};    //  Options
                                              
@@ -84,11 +87,9 @@ struct LCD{
                                     "Are You Sure?", "All Deleted"};    //  Options
 }sPage;
 
-void setup() {
+void setup() { 
   Serial.begin(9600);  
   pinMode(BEATING_LED, OUTPUT);
-  pinMode(CS_RFID, OUTPUT);
-  pinMode(CS_SD_CARD, OUTPUT);
   
   pinMode(UP, INPUT);
   pinMode(DOWN , INPUT);
@@ -102,12 +103,13 @@ void setup() {
   lcd.backlight();
   SPI.begin();
   mfrc522.PCD_Init();
+  mfrc522.PCD_DumpVersionToSerial();
 
   while(!Serial);
-  Serial.println("Here");
+  //Serial.println("Here");
 
-  digitalWrite(CS_RFID, HIGH);
-  digitalWrite(CS_SD_CARD, LOW);
+  digitalWrite(CS_RFID, LOW);
+  digitalWrite(CS_SD_CARD, HIGH);
   
   if (SD.begin(CS_SD_CARD)){
     digitalWrite(LED_BUILTIN, HIGH);
@@ -122,13 +124,11 @@ void setup() {
   }
 }
 
-void loop() {
+void loop() { 
   jobs();
-  
 }
 
-void jobs(){
-
+void jobs() { 
   // Indicates that the program is running
   if (!beat){
     digitalWrite(BEATING_LED, digitalRead(BEATING_LED) ^ 1);
@@ -136,19 +136,23 @@ void jobs(){
   }
 
   // Runs function that controls the menu
-  if(!buttonDebounceTimer)
+  if(!buttonDebounceTimer){
     LCD_Map(menu);
+  }
 }
 
-void dec(){ 
+void dec() { 
   if (beat)
     beat--;
     
   if (buttonDebounceTimer)
     buttonDebounceTimer--;
+
+  if (cardScanningTimer)
+    cardScanningTimer--;
 }
 
-void fillCardBuffer(){ // Gets all the cards from Sd Card and places them in Card Buffer
+void fillCardBuffer() { // Gets all the cards from Sd Card and places them in Card Buffer
   int index = 0;
   int cTotal = 0;
   int cIndex = 0;
@@ -238,7 +242,7 @@ int CheckHDirection() {
   else{return 0;}
 }
 
-int CheckVDirection(){ 
+int CheckVDirection() { 
   if (digitalRead(OUT)) {
     Serial.println("Out has been pressed");
     buttonDebounceTimer = 5;
@@ -326,9 +330,46 @@ void LCD_Map(int mode) {
         break; 
       }
 
-      
-   //****// Scan Card
-      delay(5000);
+//****// Scan Card
+      //Serial.print("card timer = "); Serial.println(cardScanningTimer);
+      if (resetCardTimer == 0){
+        digitalWrite(CS_RFID, LOW);
+        //digitalWrite(CS_SD_CARD, HIGH);
+        cardScanningTimer = 50;
+        resetCardTimer = 1;
+      }
+      if (cardScanningTimer > 0){
+        successfulRead = getID();
+        //Serial.print("READ "); Serial.println(successfulRead);
+        if (successfulRead == 1){
+          // a Card was scanned
+          // check enteredCard
+          Serial.println("Card scanned");
+          digitalWrite(CS_RFID, HIGH); 
+          resetCardTimer = 0;
+          lcd.clear();
+          cardScanningTimer = 50;     
+          menu = 0;
+          hLocation = 1;
+          vLocation = 0;
+          
+        }
+        else{
+          //Serial.println("No card Scanned");
+        }
+      }
+      else{
+        // Timer ran out, back to main menu  
+        digitalWrite(CS_RFID, HIGH);
+        Serial.println("Timed out");
+        resetCardTimer = 0;
+        lcd.clear();
+        cardScanningTimer = 50;     
+        menu = 0;
+        hLocation = 1;
+        vLocation = 0;
+      }
+      /*delay(5000);
       if (true){
         // Card scans and is good
         // Spins motor for "knob effect"
@@ -362,7 +403,7 @@ void LCD_Map(int mode) {
         menu = 0;
         hLocation = 1;
         vLocation = 0;
-      }
+      }*/
       break;
 
     case 2:

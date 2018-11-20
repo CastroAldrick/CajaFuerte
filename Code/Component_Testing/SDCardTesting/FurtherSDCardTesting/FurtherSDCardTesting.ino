@@ -14,7 +14,7 @@ void setup() {
     Serial.println("Card is good");
     myFile.close();
   }*/
-  if (SD.begin(11)){
+  if (SD.begin(25)){
     Serial.println("Card initalized");
     SD.remove("Cards.txt");
   }
