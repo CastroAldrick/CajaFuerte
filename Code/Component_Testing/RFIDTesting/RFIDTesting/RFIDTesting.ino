@@ -41,7 +41,7 @@ void setup() {
 void loop() {
   // Wait for card to be scan
   successfulRead = getID();
-  //Serial.println(successfulRead);
+  Serial.println(successfulRead);
 
   if (successfulRead == 1){
     Serial.println(enteredCard);

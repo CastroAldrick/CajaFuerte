@@ -12,7 +12,7 @@
  Includes      Explanation
  **************************************/
  
-#include <TimerOne.h> // For Software interrupts
+#include <TimerOne.h> // For Software interrLEFTts
 #include <SD.h> // SD Card Library
 #include <SPI.h> // SPI Communication 
 #include <MFRC522.h> // RFID Card 
@@ -49,10 +49,10 @@ int resetCardTimer = 0;
 MFRC522 mfrc522(CS_RFID, RST_PIN);
 
 // Navigation buttons
-#define UP     46
-#define DOWN   48
-#define OUT    49
-#define IN     47
+#define LEFT    46
+#define RIGHT   48
+#define BACK    49
+#define ENTER   47
 
 // Pages Number per Menu
 #define PAGES_MAIN_MENU         3
@@ -91,37 +91,48 @@ void setup() {
   Serial.begin(9600);  
   pinMode(BEATING_LED, OUTPUT);
   
-  pinMode(UP, INPUT);
-  pinMode(DOWN , INPUT);
-  pinMode(OUT, INPUT);
-  pinMode(IN, INPUT);
+  pinMode(LEFT, INPUT_PULLUP);
+  pinMode(RIGHT , INPUT_PULLUP);
+  pinMode(BACK, INPUT_PULLUP);
+  pinMode(ENTER, INPUT_PULLUP);
+
+  //SPISettings SetRFID(9600, MSBFIRST, SPI_MODE1);
   
-  Timer1.initialize(100000); // 100ms interrupt rate
+  Timer1.initialize(100000); // 100ms interrLEFTt rate
   Timer1.attachInterrupt( dec );
 
   lcd.init();
   lcd.backlight();
-  SPI.begin();
-  mfrc522.PCD_Init();
-  mfrc522.PCD_DumpVersionToSerial();
+  
+  
 
   while(!Serial);
   //Serial.println("Here");
-
+  //SPI.beginTransaction(SetRFID);
+  SPI.begin();
   digitalWrite(CS_RFID, LOW);
   digitalWrite(CS_SD_CARD, HIGH);
-  
+  mfrc522.PCD_Init();
+  mfrc522.PCD_DumpVersionToSerial();
+  //SPI.end();
+  //SPI.endTransaction();
+
+
+  delay(1000);
+  //SPI.begin();  
+  digitalWrite(CS_RFID, HIGH);
+  digitalWrite(CS_SD_CARD, LOW);
   if (SD.begin(CS_SD_CARD)){
     digitalWrite(LED_BUILTIN, HIGH);
     Serial.println("good");
     fillCardBuffer();
-    digitalWrite(CS_SD_CARD, HIGH);
   }
   else
   {
     digitalWrite(LED_BUILTIN, LOW);
     Serial.println("no begin");
   }
+  //SPI.end();
 }
 
 void loop() { 
@@ -160,7 +171,8 @@ void fillCardBuffer() { // Gets all the cards from Sd Card and places them in Ca
   
   Files = SD.open("Cards.txt", FILE_READ);
 
-  if (Files){
+  if (Files)
+  {
     Serial.println("Card.txt exist");
     while (Files.available()){
       cardBuf[index] = Files.read();
@@ -225,15 +237,15 @@ void fillCardBuffer() { // Gets all the cards from Sd Card and places them in Ca
 }
 
 int CheckHDirection() { 
-  if (digitalRead(UP)) {
-    Serial.println("Up has been pressed");
+  if (!digitalRead(LEFT)) {
+    Serial.println("LEFT has been pressed");
     buttonDebounceTimer = 5;
     cleared = false;
     return 1;
   }
 
-  if (digitalRead(DOWN)) {
-    Serial.println("Down has been pressed");
+  if (!digitalRead(RIGHT)) {
+    Serial.println("RIGHT has been pressed");
     buttonDebounceTimer = 5;
     cleared = false;
     return -1;
@@ -243,15 +255,15 @@ int CheckHDirection() {
 }
 
 int CheckVDirection() { 
-  if (digitalRead(OUT)) {
-    Serial.println("Out has been pressed");
+  if (!digitalRead(BACK)) {
+    Serial.println("BACK has been pressed");
     buttonDebounceTimer = 5;
     cleared = false;
     return -1;
   }
 
-  if (digitalRead(IN)) {
-    Serial.println("In has been pressed");
+  if (!digitalRead(ENTER)) {
+    Serial.println("ENTER has been pressed");
     buttonDebounceTimer = 5;
     cleared = false;
     return 1;
@@ -334,7 +346,7 @@ void LCD_Map(int mode) {
       //Serial.print("card timer = "); Serial.println(cardScanningTimer);
       if (resetCardTimer == 0){
         digitalWrite(CS_RFID, LOW);
-        //digitalWrite(CS_SD_CARD, HIGH);
+        digitalWrite(CS_SD_CARD, HIGH);
         cardScanningTimer = 50;
         resetCardTimer = 1;
       }
@@ -345,7 +357,7 @@ void LCD_Map(int mode) {
           // a Card was scanned
           // check enteredCard
           Serial.println("Card scanned");
-          digitalWrite(CS_RFID, HIGH); 
+          digitalWrite(CS_RFID, HIGH);
           resetCardTimer = 0;
           lcd.clear();
           cardScanningTimer = 50;     
@@ -656,7 +668,7 @@ uint8_t getID() {
   }
   // There are Mifare PICCs which have 4 byte or 7 byte UID care if you use 7 byte PICC
   // I think we should assume every PICC as they have 4 byte UID
-  // Until we support 7 byte PICCs
+  // Until we sLEFTport 7 byte PICCs
   Serial.println(F("Scanned PICC's UID:"));
   for ( byte i = 0; i < mfrc522.uid.size; i++) {
     if (i != 0){
@@ -676,4 +688,6 @@ uint8_t getID() {
  *                            2.  Added a function to read the Card.txt file from the SD Card and then organize it
  * 11/9/2018    v1.01         1.  Added pinmode for the RFID Card                           
  * 11/18/2018   v1.02         1.  Added functions for the menu and the navigation
+ * 11/22/2018   v1.03         1.  Changed the touch buttons to physical buttons
+ *                            2.  Fixed the communication issues with multiple SPI devices 
  */
