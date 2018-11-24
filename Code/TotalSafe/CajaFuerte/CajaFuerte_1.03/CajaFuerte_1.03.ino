@@ -18,6 +18,8 @@
 #include <MFRC522.h> // RFID Card 
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
+#include <DS3231.h>
+DS3231 rtc(SDA, SCL);
 
 
 LiquidCrystal_I2C lcd(0x27,16,2);
@@ -30,8 +32,14 @@ unsigned int volatile cardScanningTimer = 50; // 5s
 #define BEATING_LED 24
 
 File Files;
-char cardBuf[65];
-char cards[5][30];
+char cardBuf[70];
+char cards[5][11];
+String Card0 = "";
+String Card1 = "";
+String Card2 = "";
+String Card3 = "";
+String Card4 = "";
+String sCards[5];
 
 int hLocation = 1;
 int menu = 0;
@@ -89,6 +97,7 @@ struct LCD {
 
 void setup() { 
   Serial.begin(9600);  
+  rtc.begin();
   pinMode(BEATING_LED, OUTPUT);
   
   pinMode(LEFT, INPUT_PULLUP);
@@ -96,9 +105,8 @@ void setup() {
   pinMode(BACK, INPUT_PULLUP);
   pinMode(ENTER, INPUT_PULLUP);
 
-  //SPISettings SetRFID(9600, MSBFIRST, SPI_MODE1);
   
-  Timer1.initialize(100000); // 100ms interrLEFTt rate
+  Timer1.initialize(100000); // 100ms interrupt rate
   Timer1.attachInterrupt( dec );
 
   lcd.init();
@@ -133,6 +141,7 @@ void setup() {
     Serial.println("no begin");
   }
   //SPI.end();
+  //rtc.setTime(16, 41, 0);
 }
 
 void loop() { 
@@ -180,26 +189,26 @@ void fillCardBuffer() { // Gets all the cards from Sd Card and places them in Ca
     }
     Files.close();
 
-    /* 
+    
     // Prints card buffer
-    for (int i = 0; i < 65; i++){
+    for (int i = 0; i < 70; i++){
         Serial.print(i); Serial.print(","); Serial.println(cardBuf[i]);
-    }*/
+    }
 
     
     // Organizes the cards 
-    for (int i = 0; i < 65; i++){
+    for (int i = 0; i < 70; i++){
       
-      if ( (i == 11) || (i == 12) ||
-           (i == 24) || (i == 25) ||
-           (i == 37) || (i == 38) ||
-           (i == 50) || (i == 51) ||
-           (i == 63) || (i == 64) )
+      if ( (i == 11) || (i == 12) || (i == 13) ||  
+           (i == 25) || (i == 26) || (i == 27) ||
+           (i == 39) || (i == 40) || (i == 41) ||
+           (i == 53) || (i == 54) || (i == 55) ||
+           (i == 67) /*|| (i == 64) || (i == 65)*/) 
       {
         // Dont Save
       }
       
-      if ( (i == 13) || (i == 26) || (i == 39) || (i == 52) )
+      if ( (i == 14) || (i == 28) || (i == 42) || (i == 56) )
       { // Reset Card index before saving
         cIndex = 0;
         nextCard = 1;
@@ -234,428 +243,80 @@ void fillCardBuffer() { // Gets all the cards from Sd Card and places them in Ca
   {
     Serial.println("SD Card reader failed to initialize");
   }
-}
 
-int CheckHDirection() { 
-  if (!digitalRead(LEFT)) {
-    Serial.println("LEFT has been pressed");
-    buttonDebounceTimer = 5;
-    cleared = false;
-    return 1;
+  //  Converts the Card arrays to Strings that can be used to compare
+  cTotal = 0;
+  cIndex = 0;
+  nextCard = 0;
+  for (int i = 0; i <= 10; i++){
+    switch (cTotal){
+      case 0:
+        Card0.concat(cards[cTotal][i]);
+        if (i == 10){
+          i = -1;
+          cTotal++;
+        }          
+        break;
+
+      case 1:
+        Card1.concat(cards[cTotal][i]);
+        if (i == 10){
+          i = -1;
+          cTotal++;
+        }          
+        break;
+
+      case 2:
+        Card2.concat(cards[cTotal][i]);
+        if (i == 10){
+          i = -1;
+          cTotal++;
+        }          
+        break;
+
+      case 3:
+        Card3.concat(cards[cTotal][i]);
+        if (i == 10){
+          i = -1;
+          cTotal++;
+        }          
+        break;
+
+      case 4:
+        Card4.concat(cards[cTotal][i]);
+        if (i == 10){
+        }          
+        break;
+    }
+  }
+//  Serial.print("Card0 = "); Serial.println(Card0);
+//  Serial.print("Card1 = "); Serial.println(Card1);
+//  Serial.print("Card2 = "); Serial.println(Card2);
+//  Serial.print("Card3 = "); Serial.println(Card3);
+//  Serial.print("Card4 = "); Serial.println(Card4);
+  //sCards[5] = {Card0, Card1, Card2, Card3, Card4};
+
+  for (int x = 0; x <= 5; x++){
+    switch (x){
+      case 0:
+        sCards[0] = Card0;
+        break;
+      case 1:
+        sCards[1] = Card1;
+        break;
+      case 2:
+        sCards[2] = Card2;
+        break;
+      case 3:
+        sCards[3] = Card3;
+        break;
+      case 4:
+        sCards[4] = Card4;
+        break;
+    }
   }
 
-  if (!digitalRead(RIGHT)) {
-    Serial.println("RIGHT has been pressed");
-    buttonDebounceTimer = 5;
-    cleared = false;
-    return -1;
-  }
-  
-  else{return 0;}
-}
-
-int CheckVDirection() { 
-  if (!digitalRead(BACK)) {
-    Serial.println("BACK has been pressed");
-    buttonDebounceTimer = 5;
-    cleared = false;
-    return -1;
-  }
-
-  if (!digitalRead(ENTER)) {
-    Serial.println("ENTER has been pressed");
-    buttonDebounceTimer = 5;
-    cleared = false;
-    return 1;
-  }
-  
-  else{return 0;}
-}
-
-void LCD_Map(int mode) { 
-  
-  switch (mode) {
-    case 0:
-      lcd.setCursor(0,0);
-      lcd.print(sPage.Main[0]);
-      hLocation = hLocation + CheckHDirection();
-
-      switch (hLocation) {
-        case PAGES_MAIN_MENU:
-          hLocation = 1;
-          break;
-
-        case LOWEST_PAGE - 1:
-          hLocation = PAGES_MAIN_MENU - 1;
-          break;
-      }
-
-      switch (hLocation) {
-        case 1:
-          if (cleared == false){
-            lcd.setCursor (0, 1);
-            lcd.print("                ");
-            cleared = true; 
-          }
-          lcd.setCursor(0,1);
-          lcd.print(sPage.Main[hLocation]);
-          break;
-
-        case 2:
-          if (cleared == false){
-            lcd.setCursor (0, 1);
-            lcd.print("                ");
-            cleared = true; 
-          }
-          lcd.setCursor(0,1);
-          lcd.print(sPage.Main[hLocation]);
-      }
-
-      vLocation = vLocation + CheckVDirection();
-
-      vLocation = (vLocation == -1)?(0):(vLocation);
-
-      switch (vLocation){
-        case 1:
-          lcd.clear();
-          menu = hLocation;
-          vLocation = 0;
-          hLocation = 1;
-          break;
-      }
-      break;
-      
-    case 1:
-      lcd.setCursor(0,0);
-      lcd.print(sPage.Safe_Access[0]);  
-      lcd.setCursor(0,1);
-      lcd.print(sPage.Safe_Access[1]);
-      
-      vLocation = vLocation + CheckVDirection();
-
-      switch (vLocation){
-       case -1:
-        lcd.clear();
-        menu = 0;
-        vLocation = 0;
-        hLocation = 1;
-        break; 
-      }
-
-//****// Scan Card
-      //Serial.print("card timer = "); Serial.println(cardScanningTimer);
-      if (resetCardTimer == 0){
-        digitalWrite(CS_RFID, LOW);
-        digitalWrite(CS_SD_CARD, HIGH);
-        cardScanningTimer = 50;
-        resetCardTimer = 1;
-      }
-      if (cardScanningTimer > 0){
-        successfulRead = getID();
-        //Serial.print("READ "); Serial.println(successfulRead);
-        if (successfulRead == 1){
-          // a Card was scanned
-          // check enteredCard
-          Serial.println("Card scanned");
-          digitalWrite(CS_RFID, HIGH);
-          resetCardTimer = 0;
-          lcd.clear();
-          cardScanningTimer = 50;     
-          menu = 0;
-          hLocation = 1;
-          vLocation = 0;
-          
-        }
-        else{
-          //Serial.println("No card Scanned");
-        }
-      }
-      else{
-        // Timer ran out, back to main menu  
-        digitalWrite(CS_RFID, HIGH);
-        Serial.println("Timed out");
-        resetCardTimer = 0;
-        lcd.clear();
-        cardScanningTimer = 50;     
-        menu = 0;
-        hLocation = 1;
-        vLocation = 0;
-      }
-      /*delay(5000);
-      if (true){
-        // Card scans and is good
-        // Spins motor for "knob effect"
-        // Pulls Solenoid
-        lcd.clear();
-        lcd.setCursor(0,0);
-        lcd.print("Valid Card");
-  
-        lcd.setCursor(0,1);
-        lcd.print("Door is Open");
-
-        // Wait for door to be closed "delay"
-        delay(5000);
-        lcd.clear();
-        menu = 0;
-        hLocation = 1;
-        vLocation = 0;
-      }
-      else{
-        // Card scans and is bad
-        lcd.clear();
-        lcd.setCursor(0,0);
-        lcd.print("Sorry");
-  
-        lcd.setCursor(0,1);
-        lcd.print("Invalid Card");
-
-        // Wait a little "delay"
-        delay(5000);
-        lcd.clear();
-        menu = 0;
-        hLocation = 1;
-        vLocation = 0;
-      }*/
-      break;
-
-    case 2:
-      lcd.setCursor(0,0);
-      lcd.print(sPage.Admin_Access[0]);
-      lcd.setCursor(0,1);
-      lcd.print(sPage.Admin_Access[1]);
-
-      vLocation = vLocation + CheckVDirection();
-
-      switch (vLocation){
-        case -1:
-          menu = 0;
-          vLocation = 0;
-          hLocation = 1;
-          break;  
-      }
-
-//****// Finger Scanning    
-      if (true){
-        lcd.clear();
-        menu = 3;
-        vLocation = 0;
-        hLocation = 1;
-      }
-      break;
-
-    case 3:
-      lcd.setCursor(0,0);
-      lcd.print(sPage.Valid_Print[0]);  //  Access Granted
-      
-      hLocation = hLocation + CheckHDirection();
-
-      switch (hLocation){
-        case PAGES_VALID_PRINT:
-          hLocation = 1;
-          break;        
-
-        case LOWEST_PAGE - 1:
-          hLocation = PAGES_VALID_PRINT - 1;
-          break;
-      }
-
-      switch (hLocation){
-        case 1:
-          if (cleared == false){
-            lcd.setCursor (0, 1);
-            lcd.print("                ");
-            cleared = true; 
-          }
-          lcd.setCursor(0,1);
-          lcd.print(sPage.Valid_Print[hLocation]); //  Enroll New Print
-          break; 
-
-        case 2:
-          if (cleared == false){
-            lcd.setCursor (0, 1);
-            lcd.print("                ");
-            cleared = true; 
-          }
-          lcd.setCursor(0,1);
-          lcd.print(sPage.Valid_Print[hLocation]);  // Delete Existing Print
-          break;
-
-        case 3:
-          if (cleared == false){
-            lcd.setCursor (0, 1);
-            lcd.print("                ");
-            cleared = true; 
-          }
-          lcd.setCursor(0,1);
-          lcd.print(sPage.Valid_Print[hLocation]);  //  Erase All Prints
-          break;
-      }
-      
-      vLocation = vLocation + CheckVDirection();
-      
-      switch (vLocation){
-        case -1:
-          lcd.clear();
-          menu = 0;    //  Main Menu
-          vLocation = 0;
-          hLocation = 1;
-          break;
-          
-        case 1:
-          lcd.clear();
-          menu = hLocation + 3;    //  Enroll New Print = 4, Delete Existing = 5, Erase All Prints = 6
-          vLocation = 0;
-          hLocation = 1;
-          break;
-      }
-      break;
-
-    case 4: //  Enroll New Print Menu
-      lcd.setCursor(0,0);
-      lcd.print(sPage.Enroll_Print[0]);  //  Enroll New Print
-      lcd.setCursor(0,1);
-      lcd.print(sPage.Enroll_Print[1]);  //  Print ID # 
-
-      hLocation = hLocation + -CheckHDirection();
-      
-      switch (hLocation){
-        case 0:
-          hLocation = 1;
-          break;
-
-        case 6:
-          hLocation = 5;
-          break;
-      }
-      
-      lcd.print("  "); lcd.print(hLocation);
-
-      vLocation = CheckVDirection();
-
-      switch (vLocation){
-        case -1:
-          lcd.clear();
-          menu = 3;
-          vLocation = 0;
-          hLocation = 1;
-          break;  
-
-        case 1:
-          vLocation = 0;
-          hLocation = 1;
-          lcd.setCursor (0, 1);
-          lcd.print("                ");
-          lcd.setCursor (0, 1);
-          lcd.print(sPage.Enroll_Print[2]);  //  Enter Finger
-
-          // Scan Finger
-          delay(2000);
-          lcd.setCursor (0, 1);
-          lcd.print("                ");
-          lcd.setCursor (0, 1);
-          lcd.print(sPage.Enroll_Print[3]);  //  Remove Finger
-          
-          delay(2000);
-          lcd.setCursor (0, 1);
-          lcd.print("                ");
-          lcd.setCursor (0, 1);
-          lcd.print(sPage.Enroll_Print[4]);  //  Enter Finger
-
-          delay(2000);
-          lcd.setCursor (0, 1);
-          lcd.print("                ");
-          lcd.setCursor (0, 1);
-          lcd.print(sPage.Enroll_Print[5]);  //  Finger Enrolled
-          delay(2000);
-          lcd.clear();
-          menu = 0;
-          // Add finger print counter
-          break;
-      }
-      break;
-
-    case 5:
-      lcd.setCursor(0,0);
-      lcd.print(sPage.Delete_Print[0]);  //  Delete Print
-      lcd.setCursor(0,1);
-      lcd.print(sPage.Delete_Print[1]);  //  Print ID #
-
-      hLocation = hLocation + -CheckHDirection();
-      
-      switch (hLocation){
-        case 0:
-          hLocation = 1;
-          break;
-
-        case 6:
-          hLocation = 5;
-          break;
-      }
-
-      lcd.print("  "); lcd.print(hLocation);
-
-      vLocation = CheckVDirection();
-
-      switch (vLocation){
-        case -1:
-          lcd.clear();
-          menu = 3;
-          vLocation = 0;
-          hLocation = 1;
-          break;
-        
-        case 1:
-          //  Delete Print
-          delay(2000);
-          lcd.setCursor (0, 1);
-          lcd.print("                ");
-          lcd.setCursor (0, 1);
-          lcd.print(sPage.Delete_Print[2]); lcd.print(" #"); lcd.print(hLocation);
-          delay(2000);
-
-          lcd.clear();
-          menu = 0;
-          break;
-      }
-      break;
-
-      //  
-      case 6:
-        lcd.setCursor(0,0);
-        lcd.print(sPage.Delete_All[0]);  //  Delete All Prints
-        lcd.setCursor(0,1);
-        lcd.print(sPage.Delete_All[1]);  //  Are You Sure?
-    
-        vLocation = CheckVDirection();
-  
-        switch (vLocation){
-          case -1:
-            lcd.clear();
-            menu = 3;
-            vLocation = 0;
-            hLocation = 1;
-            break;
-          
-          case 1:
-            //  Delete All The Prints
-            lcd.setCursor (0, 1);
-            lcd.print("                ");
-            lcd.setCursor (0, 1);
-            lcd.print("Deleting Prints");
-            delay(2000);
-            lcd.setCursor (0, 1);
-            lcd.print("                ");
-            lcd.setCursor (0, 1);
-            lcd.print(sPage.Delete_All[2]);
-            delay(2000);
-  
-            lcd.clear();
-            menu = 0;
-            vLocation = 0;
-            hLocation = 1;
-            break;
-        }
-  }
+  Serial.println(sCards[4]);
 }
 
 uint8_t getID() { 
