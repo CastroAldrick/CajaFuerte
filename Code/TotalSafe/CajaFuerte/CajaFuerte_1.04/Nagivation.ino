@@ -84,14 +84,9 @@ void LCD_Map(int mode) {
   bool match = false;
   int attempt = 0; 
   int emptySpace = 0;
-
-  //digitalWrite(CS_RFID, HIGH);
-  //digitalWrite(CS_SD_CARD, HIGH);
   
   switch (mode) {
     case 0:
-      digitalWrite(CS_RFID, HIGH);
-      digitalWrite(CS_SD_CARD, HIGH);
       lcd.setCursor(0,0);
       lcd.print(sPage.Main[0]);
       hLocation = hLocation + CheckHDirection();
@@ -173,7 +168,7 @@ void LCD_Map(int mode) {
           // a Card was scanned
           Serial.println("Card scanned");
           Serial.println(enteredCard);
-          //digitalWrite(CS_RFID, HIGH);
+          digitalWrite(CS_RFID, HIGH);
 
 
           // Check if card is Good
@@ -198,7 +193,7 @@ void LCD_Map(int mode) {
           
           
           // Save card scanned in LOG.TXT file along with time and Status
-          //digitalWrite(CS_SD_CARD, LOW);
+          digitalWrite(CS_SD_CARD, LOW);
           Files = SD.open("LOG.TXT", FILE_WRITE);
           if (Files)
           {
@@ -541,7 +536,7 @@ void LCD_Map(int mode) {
         }
 
         lcd.print(emptySpace);
-        //delay(5000);
+        delay(5000);
         hLocation = hLocation + CheckHDirection();
 
         switch (hLocation){
@@ -603,8 +598,8 @@ void LCD_Map(int mode) {
             hLocation = 1;
             break;
         }
-        /*for (int inx = 0; inx <= 4; inx++){
-                  Serial.println(emptySlot[inx]);}*/
+        for (int inx = 0; inx <= 4; inx++){
+                  Serial.println(emptySlot[inx]);}
         break;
 
       case 8:
@@ -613,32 +608,26 @@ void LCD_Map(int mode) {
 
         for (int card = 0; card <= 4; card++){
           if (sCards[card] == "EMPTY EMPTY"){
-            //Serial.println(card);
+            Serial.println(card);
             emptySlot[card] = true;
 
-            /*if (emptySlot[card]){
+            if (emptySlot[card]){
               Serial.print("Slot ");
               Serial.print(card);
               Serial.println(" empty");
-            }*/
+            }
           }
         }
-        Serial.print("reset ");
-        Serial.println(resetCardTimer);
+        
         if (resetCardTimer == 0){
-          digitalWrite(CS_RFID, LOW);
-          digitalWrite(CS_SD_CARD, HIGH);
-          Serial.println("here");
-          cardScanningTimer = 50;
-          resetCardTimer = 1;
+        digitalWrite(CS_RFID, LOW);
+        digitalWrite(CS_SD_CARD, HIGH);
+        cardScanningTimer = 50;
+        resetCardTimer = 1;
         }
-
-        Serial.print("timer ");
-        Serial.println(cardScanningTimer);
+        
         if (cardScanningTimer > 0){
           successfulRead = getID();
-          Serial.print("success ");
-          Serial.println(successfulRead);
           if (successfulRead == 1){
             // a Card was scanned
             Serial.println("Card scanned");
@@ -649,22 +638,9 @@ void LCD_Map(int mode) {
             for (int num = 0; num <= 4; num++){
               if (enteredCard == sCards[num]){
                 Serial.print(enteredCard);
-                Serial.print(" Matches Card ");
+                Serial.print("Matches Card ");
                 Serial.println(num);
-                Serial.println("Cannot Add");
-                for (int i = 0; i <= 4; i++){
-                  Serial.println(sCards[i]);
-                }
-
-                
-                //match = true;
-                enteredCard = "";
-                resetCardTimer = 0;
-                cardScanningTimer = 50;
-                lcd.clear();
-                menu = 0;    //  Main Menu 
-                vLocation = 0;
-                hLocation = 1;
+                match = true;
                 break;
               }
               else if(num == 4){
@@ -678,26 +654,24 @@ void LCD_Map(int mode) {
                     Serial.println("Card added");
 
                     //  upload changes to sd card
-                    Serial.println(sCards[0]);
+                    /*Serial.println(sCards[0]);
                     Serial.println(sCards[1]);
                     Serial.println(sCards[2]);
                     Serial.println(sCards[3]);
-                    Serial.println(sCards[4]);
-
-                    enteredCard = "";
-                    resetCardTimer = 0;
-                    cardScanningTimer = 50;
+                    Serial.println(sCards[4]);*/
                     lcd.clear();
                     menu = 0;    //  Main Menu 
                     vLocation = 0;
                     hLocation = 1;
-                    updateCard();
                     break;
                   }
                   else
                     Serial.println("blah");
                 }
               }
+            }
+            if (match){
+               Serial.println("Match, cannot add");
             }
           }
         }

@@ -332,4 +332,5 @@ void updateCard(){
  * 11/22/2018   v1.03         1.  Changed the touch buttons to physical buttons
  *                            2.  Fixed the communication issues with multiple SPI devices 
  *                            3.  Added Real Time Clock and made changes to have cards are saved and compared
+ * 11/25/2018   v1.04         1.  Added feature to Add Cards and update Card file
  */
