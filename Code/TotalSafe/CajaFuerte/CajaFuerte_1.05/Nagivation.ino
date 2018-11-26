@@ -43,7 +43,7 @@ void LCD_Map(int mode) {
   #define PAGES_DELETE_PRINT      3
   #define PAGES_DELETE_ALL        3
   #define PAGES_ADD_CARD          4
-  #define PAGES_REMOVE_CARD       4
+  #define PAGES_REMOVE_CARD       5
   #define PAGES_REMOVE_ALL_CARDS  3
   #define LOWEST_PAGE             1
   
@@ -74,16 +74,18 @@ void LCD_Map(int mode) {
                                     "Scan Card", "Card is #: ", "No More Space"};     //  Options
                                       
     String Remove_Card[PAGES_REMOVE_CARD]   = {"Remove Card",             //  Title
-                               "Scan Card", "Card # ", "Card Removed"} ;   //  Options
+                               "Scan Card", "Card # ", "Card Removed", "No Cards Saved"} ;   //  Options
                                       
     String Remove_All_Cards[PAGES_REMOVE_ALL_CARDS]   = {"Remove All Cards",                       //  Title
                                                    "Are You Sure?", "All Removed"};     //  Options
   }sPage; 
 
   bool emptySlot[5] = {false, false, false, false, false};
+  bool occupiedSlot[5] = {false, false, false, false, false};
   bool match = false;
   int attempt = 0; 
   int emptySpace = 0;
+  int occupiedSpace = 0;
 
   //digitalWrite(CS_RFID, HIGH);
   //digitalWrite(CS_SD_CARD, HIGH);
@@ -598,7 +600,7 @@ void LCD_Map(int mode) {
             
           case 1:
             lcd.clear();
-            menu = hLocation + 7;
+            menu = 10; //  Scan Card for adding
             vLocation = 0;
             hLocation = 1;
             break;
@@ -609,7 +611,96 @@ void LCD_Map(int mode) {
 
       case 8:
         lcd.setCursor(0,0);
-        lcd.print(sPage.Add_Card[1]);  //  Scan Card
+        lcd.print(sPage.Remove_Card[0]);
+
+        for (int card = 0; card <= 4; card++){
+//          if (sCards[card] != "EMPTY EMPTY"){
+//            
+//            Serial.print(card);
+//            Serial.println("Card is empty");
+              occupiedSlot[card] = true;
+              occupiedSpace++;
+        }
+        
+
+//        Serial.println(occupiedSpace);
+        if (occupiedSpace == 0){
+          Serial.println("No cards exist");
+          lcd.clear();
+          menu = 2;    //  Admin Access  
+          vLocation = 0;
+          hLocation = 1;
+        }
+        
+         vLocation = vLocation + CheckVDirection();
+      
+        switch (vLocation){
+          case -1:
+            lcd.clear();
+            menu = 2;    //  Admin Access  
+            vLocation = 0;
+            hLocation = 1;
+            break;
+            
+          case 1:
+            lcd.clear();
+//            menu = 11; //  Scan Card for removing
+//            vLocation = 0;
+//            hLocation = 1;
+              lcd.setCursor(0,0);
+              lcd.print(sPage.Remove_Card[2]);
+
+              if (resetCardTimer == 0){
+                digitalWrite(CS_RFID, LOW);
+                digitalWrite(CS_SD_CARD, HIGH);
+                cardScanningTimer = 50;
+                resetCardTimer = 1;
+              }
+
+              if (cardScanningTimer > 0){
+                Serial.println("Scanning");
+                successfulRead = getID();
+                if (successfulRead == 1){
+                  digitalWrite(CS_RFID, HIGH);
+                  Serial.println(enteredCard);
+
+                  for (int card = 0; card <= 4; card++){
+                    if (enteredCard == sCards[card]){
+                      Serial.print(enteredCard);
+                      Serial.print(" Matches ");
+                      Serial.println(card);
+                      Serial.println("Removing");
+                      sCards[card] = "EMPTY EMPTY";
+                      updateCard();
+                      Serial.println("Removed");
+                      break;
+                      
+                    }
+                    else if(card == 4){
+                      Serial.println("Doesnt match records");
+                    }
+                  }
+                  enteredCard = "";
+                  resetCardTimer = 0;
+                  cardScanningTimer = 50;
+                  lcd.clear();
+                  menu = 0;    //  Main Menu 
+                  vLocation = 0;
+                  hLocation = 1;  
+                }
+              }
+            Serial.println(sCards[0]);
+            Serial.println(sCards[1]);
+            Serial.println(sCards[2]);
+            Serial.println(sCards[3]);
+            Serial.println(sCards[4]);
+            break;
+        }
+        break;
+
+      case 10:
+        lcd.setCursor(0,0);
+        lcd.print(sPage.Add_Card[1]);  //  Scan Card for adding
 
         for (int card = 0; card <= 4; card++){
           if (sCards[card] == "EMPTY EMPTY"){
@@ -704,4 +795,5 @@ void LCD_Map(int mode) {
         break;
   }
 }
+
 
