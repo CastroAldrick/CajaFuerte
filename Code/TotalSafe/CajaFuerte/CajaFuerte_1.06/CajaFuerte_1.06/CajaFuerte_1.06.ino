@@ -313,7 +313,7 @@ void updateCard(){
 
   Files = SD.open("CARDS.TXT", FILE_WRITE);
   if (Files){
-    Serial.println("Cards.txt opened");
+    Serial.println("Cards.txt openned");
     for (int i = 0; i <= 4; i++){
       Files.print(sCards[i]);
       Files.println(" ");
@@ -324,7 +324,21 @@ void updateCard(){
   Serial.println("Finished editting Cards.txt");
 }
 
+void rmAllCards(){
+  SD.remove("CARDS.TXT");
 
+  Files = SD.open("CARDS.TXT", FILE_WRITE);
+  if(Files){
+    Serial.println("Cards.txt openned");
+    for (int i = 0; i <= 4; i++){
+      Files.print(sCards[i]);
+      Files.println(" ");
+    }
+    Serial.println("Done");
+    Files.close();
+  }
+  Serial.println("Finished editting Cards.txt");
+}
 /* Date         Version       Modification
  * 11/6/2018    v1.00         1.  Added the timer for the project
  *                            2.  Added a function to read the Card.txt file from the SD Card and then organize it
@@ -335,4 +349,5 @@ void updateCard(){
  *                            3.  Added Real Time Clock and made changes to have cards are saved and compared
  * 11/25/2018   v1.04         1.  Added feature to Add Cards and update Card file
  * 11/25/2018   v1.05         1.  Added feature to Remove Cards and update the Card file 
+ * 11/27/2018   v1.06         1.  Added feature to Remove All Cards and update the Card file
  */
