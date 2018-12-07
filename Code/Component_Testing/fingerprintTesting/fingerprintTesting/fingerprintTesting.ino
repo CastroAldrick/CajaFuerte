@@ -18,7 +18,7 @@
  int fingerprintID = 0;
  Adafruit_Fingerprint finger = Adafruit_Fingerprint(&mySerial);
 
- int option = 3;    // 0 = Scanning
+ int option = 1;    // 0 = Scanning
                     // 1 = Enrolling
                     // 2 = Deleting
                     // 3 = Clearing All
@@ -33,6 +33,10 @@ void setup() {
   
   Serial.println("Done with Setup");
   finger.begin(57600);
+
+  finger.getTemplateCount();
+  Serial.print("Sensor contains "); Serial.print(finger.templateCount); Serial.println(" templates");
+  
 }
 
 void loop() {

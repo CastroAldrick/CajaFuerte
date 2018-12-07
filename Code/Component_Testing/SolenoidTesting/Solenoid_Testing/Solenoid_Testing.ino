@@ -2,7 +2,7 @@
  * Solenoid Testing
  */
 
- int Sol = 39;
+ int Sol = 26;
 
 void setup() {
  Serial.begin(9600);
@@ -11,7 +11,7 @@ void setup() {
 
 void loop() {
   digitalWrite(Sol, HIGH);
-  delay(2000);
+  delay(5000);
   digitalWrite(Sol, LOW);
-  delay(2000);
+  delay(5000);
 }
