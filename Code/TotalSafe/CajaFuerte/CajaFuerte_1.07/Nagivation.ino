@@ -86,12 +86,25 @@ void LCD_Map(int mode) {
   int attempt = 0; 
   int emptySpace = 0;
   int occupiedSpace = 0;
+  int fingerCount = 0;
 
   //digitalWrite(CS_RFID, HIGH);
   //digitalWrite(CS_SD_CARD, HIGH);
   
   switch (mode) {
     case 0:
+      finger.getTemplateCount();
+      fingerCount = finger.templateCount;
+
+      if (fingerCount == 0){
+        lcd.clear();
+        lcd.setCursor(0,0);
+        lcd.print("No Fingerprints");
+        lcd.setCursor(0,1);
+        lcd.print("Are Enrolled");
+        delay(2000);
+        menu = 4;
+      }
       digitalWrite(CS_RFID, HIGH);
       digitalWrite(CS_SD_CARD, HIGH);
       lcd.setCursor(0,0);
@@ -266,9 +279,9 @@ void LCD_Map(int mode) {
       }
 
 //****// Finger Scanning    
-      if (resetCardScanningTimer == 0){
+      if (resetFingerScanningTimer == 0){
         fingerScanTimer = 50;
-        resetCardScanningTimer = 1;
+        resetFingerScanningTimer = 1;
       }
       
       if (fingerScanTimer > 0){
@@ -277,7 +290,7 @@ void LCD_Map(int mode) {
           Serial.println("Good");
           lcd.clear();
           fingerprintID = -1;
-          resetCardScanningTimer = 0;
+          resetFingerScanningTimer = 0;
           menu = 3;
           hLocation = 1;
           vLocation = 0;
@@ -285,7 +298,8 @@ void LCD_Map(int mode) {
       }
       else{
         Serial.println("Took too long");
-        resetCardScanningTimer = 0;
+        lcd.clear();
+        resetFingerScanningTimer = 0;
         fingerprintID = -1;
         menu = 0;
         hLocation = 1;
@@ -421,15 +435,30 @@ void LCD_Map(int mode) {
 
       switch (vLocation){
         case -1:
-          lcd.clear();
-          menu = 3;
-          vLocation = 0;
-          hLocation = 1;
+          if (fingerCount == 0){
+            lcd.clear();
+            lcd.setCursor(0,0);
+            lcd.print("Please Enroll a");
+            lcd.setCursor(0,1);
+            lcd.print("Finger to Start");
+            delay(3000);
+            lcd.clear();
+          }
+          else{
+            lcd.clear();
+            menu = 3;
+            vLocation = 0;
+            hLocation = 1;
+          }
           break;  
 
         case 1:
           vLocation = 0;
-          hLocation = 1;
+          //hLocation = 1;
+
+          getFingerprintEnroll(hLocation);
+
+          /*
           lcd.setCursor (0, 1);
           lcd.print("                ");
           lcd.setCursor (0, 1);
@@ -454,8 +483,11 @@ void LCD_Map(int mode) {
           lcd.setCursor (0, 1);
           lcd.print(sPage.Enroll_Print[5]);  //  Finger Enrolled
           delay(2000);
+          */
+          
           lcd.clear();
           menu = 0;
+          hLocation = 1;
           // Add finger print counter
           break;
       }
@@ -493,15 +525,17 @@ void LCD_Map(int mode) {
         
         case 1:
           //  Delete Print
-          delay(2000);
           lcd.setCursor (0, 1);
           lcd.print("                ");
           lcd.setCursor (0, 1);
           lcd.print(sPage.Delete_Print[2]); lcd.print(" #"); lcd.print(hLocation);
-          delay(2000);
+          delay(1000);
+          deleteFingerprint(hLocation);
 
           lcd.clear();
           menu = 0;
+          vLocation = 0;
+          hLocation = 1;
           break;
       }
       break;

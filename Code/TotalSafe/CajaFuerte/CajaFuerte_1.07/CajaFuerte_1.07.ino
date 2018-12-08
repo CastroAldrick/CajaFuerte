@@ -61,7 +61,7 @@ bool cleared = false;
 int successfulRead = 0;
 String enteredCard = "";
 int resetCardTimer = 0;
-int resetCardScanningTimer = 0;
+int resetFingerScanningTimer = 0;
 
 // Chip Selects for SPI Slaves
 #define CS_RFID     22
@@ -386,15 +386,26 @@ uint8_t readnumber(void) {
   return num;
 }
 
-uint8_t getFingerprintEnroll() {
+uint8_t getFingerprintEnroll(int id) {
   int p = -1;
-  Serial.print("Waiting for valid finger to enroll as #"); Serial.println(id);
+  //Serial.print("Waiting for valid finger to enroll as #"); Serial.println(id);
+  lcd.setCursor (0, 1);
+  lcd.print("                ");
+  lcd.setCursor (0, 1);
+  lcd.print("Enter Finger");
+  
   while (p != FINGERPRINT_OK) {
     p = finger.getImage();
     switch (p) {
     case FINGERPRINT_OK:
       Serial.println("Image taken");
+      lcd.setCursor (0, 1);
+      lcd.print("                ");
+      lcd.setCursor (0, 1);
+      lcd.print("Image taken");
+      delay(500);
       break;
+      
     case FINGERPRINT_NOFINGER:
       //Serial.println(".");
       break;
@@ -435,6 +446,10 @@ uint8_t getFingerprintEnroll() {
   }
   
   Serial.println("Remove finger");
+  lcd.setCursor (0, 1);
+  lcd.print("                ");
+  lcd.setCursor (0, 1);
+  lcd.print("Remove Finger");
   delay(2000);
   p = 0;
   while (p != FINGERPRINT_NOFINGER) {
@@ -443,6 +458,11 @@ uint8_t getFingerprintEnroll() {
   Serial.print("ID "); Serial.println(id);
   p = -1;
   Serial.println("Place same finger again");
+  lcd.setCursor (0, 1);
+  lcd.print("                ");
+  lcd.setCursor (0, 1);
+  lcd.print("EntrFinger Again");
+  
   while (p != FINGERPRINT_OK) {
     p = finger.getImage();
     switch (p) {
@@ -509,7 +529,11 @@ uint8_t getFingerprintEnroll() {
   p = finger.storeModel(id);
   if (p == FINGERPRINT_OK) {
     Serial.println("Stored!");
-    Done = true;
+    lcd.setCursor (0, 1);
+    lcd.print("                ");
+    lcd.setCursor (0, 1);
+    lcd.print("Stored print# "); lcd.print(id);
+    delay(1000);
   } else if (p == FINGERPRINT_PACKETRECIEVEERR) {
     Serial.println("Communication error");
     return p;
@@ -532,7 +556,10 @@ uint8_t deleteFingerprint(uint8_t id) {
 
   if (p == FINGERPRINT_OK) {
     Serial.println("Deleted!");
-    Done = true;
+    lcd.setCursor (0, 1);
+    lcd.print("                ");
+    lcd.setCursor (0, 1);
+    lcd.print("Deleted!");
   } else if (p == FINGERPRINT_PACKETRECIEVEERR) {
     Serial.println("Communication error");
     return p;
@@ -558,5 +585,7 @@ uint8_t deleteFingerprint(uint8_t id) {
  * 11/25/2018   v1.04         1.  Added feature to Add Cards and update Card file
  * 11/25/2018   v1.05         1.  Added feature to Remove Cards and update the Card file 
  * 11/27/2018   v1.06         1.  Added feature to Remove All Cards and update the Card file
- * 12/06/2018   v1.07         1.  Added fingerprint scanner and migrated the fingerprint functions from the component testing section
+ * 12/06/2018   v1.07         1.  Added fingerprint scanner and migrated the fingerprint functions from the component testing section        
+ *                            2.  Added fingerprint feature to enroll and delete prints
+ *                            3.  Added fingerprint feature to caught if the system has started with no prints to force user to add a print
  */
