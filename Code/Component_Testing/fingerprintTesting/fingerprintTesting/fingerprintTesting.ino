@@ -20,7 +20,7 @@
 
  int option = 1;    // 0 = Scanning
                     // 1 = Enrolling
-                    // 2 = Deleting
+                    // 2 = Deletingfinger.emptyDatabase();
                     // 3 = Clearing All
  bool Done = false;
  uint8_t id;
@@ -30,7 +30,7 @@ void setup() {
   // Initialization
   startFingerprintSensor();
   while(!Serial);
-  
+  //finger.emptyDatabase();
   Serial.println("Done with Setup");
   finger.begin(57600);
 
@@ -57,6 +57,80 @@ void loop() {
 //
 //  //Serial.println("Enter Finger");
   delay(20);
+}
+
+int action (int option){
+  switch (option)
+  {
+    case 0:
+      Serial.println("Scanning");
+      
+      delay (1000);
+      fingerprintID = getFingerprintID();
+      //Serial.println(fingerprintID);
+      if (fingerprintID != -1){
+        Serial.println("Good");
+        Done = true;
+      }
+      break;
+      
+    case 1:
+      Serial.println("Enrolling");
+      Serial.println("Ready to enroll a fingerprint!");
+      Serial.println("Please type in the ID # (from 1 to 127) you want to save this finger as...");
+      id = readnumber();
+      if (id == 0) {// ID #0 not allowed, try again!
+         return;
+      }
+      Serial.print("Enrolling ID #");
+      Serial.println(id);
+      
+      L = getFingerprintEnroll();
+      while (!L);
+
+      delay (1000);
+      break;
+      
+    case 2:
+      Serial.println("Delete");
+      Serial.println("Enter id");
+
+      id = readnumber();
+      if (id == 0) {// ID #0 not allowed, try again!
+         return;
+      }
+      
+      Serial.print("Deleting ID #");
+      Serial.println(id);
+      
+      deleteFingerprint(id);
+      
+      delay (1000);
+      break;
+
+    case 3:
+      Serial.println("Empty Database");
+
+      Serial.println("\n\nDeleting all fingerprint templates!");
+      Serial.println("Press 'Y' key to continue");
+    
+      while (1) {
+        if (Serial.available() && (Serial.read() == 'Y')) {
+          finger.emptyDatabase();
+          Serial.println("Now database is empty :)");
+          Done = true;
+          break;
+        }
+        if (Serial.available() && (Serial.read() == 'N')){
+          Serial.println("Cancelled");
+          Done = true;
+          break;
+        }
+      }
+      delay(1000);
+      break;
+    
+  }
 }
 
 void startFingerprintSensor()
@@ -259,77 +333,4 @@ uint8_t deleteFingerprint(uint8_t id) {
   }   
 }
 
-int action (int option){
-  switch (option)
-  {
-    case 0:
-      Serial.println("Scanning");
-      
-      delay (1000);
-      fingerprintID = getFingerprintID();
-      //Serial.println(fingerprintID);
-      if (fingerprintID != -1){
-        Serial.println("Good");
-        Done = true;
-      }
-      break;
-      
-    case 1:
-      Serial.println("Enrolling");
-      Serial.println("Ready to enroll a fingerprint!");
-      Serial.println("Please type in the ID # (from 1 to 127) you want to save this finger as...");
-      id = readnumber();
-      if (id == 0) {// ID #0 not allowed, try again!
-         return;
-      }
-      Serial.print("Enrolling ID #");
-      Serial.println(id);
-      
-      L = getFingerprintEnroll();
-      while (!L);
-
-      delay (1000);
-      break;
-      
-    case 2:
-      Serial.println("Delete");
-      Serial.println("Enter id");
-
-      id = readnumber();
-      if (id == 0) {// ID #0 not allowed, try again!
-         return;
-      }
-      
-      Serial.print("Deleting ID #");
-      Serial.println(id);
-      
-      deleteFingerprint(id);
-      
-      delay (1000);
-      break;
-
-    case 3:
-      Serial.println("Empty Database");
-
-      Serial.println("\n\nDeleting all fingerprint templates!");
-      Serial.println("Press 'Y' key to continue");
-    
-      while (1) {
-        if (Serial.available() && (Serial.read() == 'Y')) {
-          finger.emptyDatabase();
-          Serial.println("Now database is empty :)");
-          Done = true;
-          break;
-        }
-        if (Serial.available() && (Serial.read() == 'N')){
-          Serial.println("Cancelled");
-          Done = true;
-          break;
-        }
-      }
-      delay(1000);
-      break;
-    
-  }
-}
 
